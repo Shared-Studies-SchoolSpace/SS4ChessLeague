@@ -1,0 +1,1481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SS4 Chess League 2026</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --ss4-blue: #2E7BFF;
+  --ss4-blue-glow: #4A8BFF;
+  --ss4-blue-dark: #0B1E4F;
+  --ss4-blue-deep: #050B1F;
+  --ss4-orange: #FF8A1F;
+  --ss4-orange-glow: #FFB347;
+  --ss4-orange-deep: #D65A00;
+  --ss4-orange-soft: #FFA552;
+  --ss4-white: #ffffff;
+
+  --bg-base: #03071A;
+  --bg-gradient-1: #0A1535;
+  --bg-gradient-2: #050B25;
+
+  --glass-bg: rgba(255, 255, 255, 0.04);
+  --glass-bg-strong: rgba(255, 255, 255, 0.07);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-border-strong: rgba(255, 255, 255, 0.18);
+  --glass-orange-border: rgba(255, 138, 31, 0.25);
+
+  --text-primary: #F5F7FF;
+  --text-secondary: #A0AEC8;
+  --text-tertiary: #6B7A96;
+
+  --border-radius-md: 12px;
+  --border-radius-lg: 18px;
+  --border-radius-xl: 24px;
+
+  --shadow-glow-blue: 0 0 40px rgba(46, 123, 255, 0.25);
+  --shadow-glow-orange: 0 0 40px rgba(255, 138, 31, 0.28);
+
+  --nav-height: 72px;
+}
+
+html, body {
+  min-height: 100%;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 14px;
+  color: var(--text-primary);
+  background: var(--bg-base);
+  background-image:
+    radial-gradient(ellipse 80% 60% at 15% 0%, rgba(46, 123, 255, 0.25), transparent 60%),
+    radial-gradient(ellipse 70% 50% at 85% 10%, rgba(255, 138, 31, 0.22), transparent 60%),
+    radial-gradient(ellipse 100% 80% at 50% 100%, rgba(46, 123, 255, 0.15), transparent 70%),
+    linear-gradient(180deg, #030718 0%, #050B25 50%, #030718 100%);
+  background-attachment: fixed;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  letter-spacing: 0.01em;
+}
+
+/* Subtle animated noise / grid overlay */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Ambient floating orbs for luxury feel */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(circle 300px at 10% 80%, rgba(255, 138, 31, 0.08), transparent),
+    radial-gradient(circle 400px at 90% 40%, rgba(46, 123, 255, 0.08), transparent);
+  pointer-events: none;
+  z-index: 0;
+  animation: ambientShift 18s ease-in-out infinite alternate;
+}
+
+@keyframes ambientShift {
+  0%   { transform: translate(0, 0); }
+  100% { transform: translate(30px, -20px); }
+}
+
+/* ======== FIXED NAVIGATION BAR ======== */
+.top-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--nav-height);
+  z-index: 50;
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(180deg, rgba(5, 11, 37, 0.85) 0%, rgba(5, 11, 37, 0.6) 100%);
+  backdrop-filter: blur(24px) saturate(200%);
+  -webkit-backdrop-filter: blur(24px) saturate(200%);
+  border-bottom: 1px solid var(--glass-border);
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.4),
+    inset 0 -1px 0 rgba(255, 138, 31, 0.15);
+  animation: navSlideIn 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes navSlideIn {
+  from { transform: translateY(-100%); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+
+.nav-logo {
+  height: 48px;
+  width: auto;
+  object-fit: contain;
+  display: block;
+  filter: drop-shadow(0 0 14px rgba(46, 123, 255, 0.55));
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), filter 0.3s ease;
+}
+
+.nav-logo:hover {
+  transform: scale(1.06) rotate(-3deg);
+  filter: drop-shadow(0 0 18px rgba(255, 138, 31, 0.55));
+}
+
+.nav-title {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+}
+
+.nav-title h1 {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  background: linear-gradient(135deg, #ffffff 0%, #FFB347 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1.1;
+}
+
+.nav-title span {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--ss4-orange-glow);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  margin-top: 3px;
+  text-shadow: 0 0 10px rgba(255, 138, 31, 0.3);
+}
+
+/* ======== MAIN WRAP ======== */
+.league-wrap {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: calc(var(--nav-height) + 1.25rem) 1rem 3rem;
+  position: relative;
+  z-index: 1;
+}
+
+/* ======== HERO BANNER ======== */
+.hero {
+  position: relative;
+  background: linear-gradient(135deg, rgba(46, 123, 255, 0.2) 0%, rgba(255, 138, 31, 0.18) 100%);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid var(--glass-border-strong);
+  color: white;
+  padding: 1.5rem 1.75rem;
+  border-radius: var(--border-radius-xl);
+  margin-bottom: 1.25rem;
+  overflow: hidden;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    var(--shadow-glow-orange);
+  animation: fadeInUp 0.6s 0.1s backwards cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -10%;
+  width: 60%;
+  height: 200%;
+  background: radial-gradient(ellipse, rgba(46, 123, 255, 0.4), transparent 60%);
+  pointer-events: none;
+  filter: blur(40px);
+  animation: glowPulseBlue 6s ease-in-out infinite;
+}
+
+.hero::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -10%;
+  width: 55%;
+  height: 200%;
+  background: radial-gradient(ellipse, rgba(255, 138, 31, 0.45), transparent 60%);
+  pointer-events: none;
+  filter: blur(40px);
+  animation: glowPulseOrange 7s ease-in-out infinite;
+}
+
+@keyframes glowPulseBlue {
+  0%, 100% { opacity: 0.7; }
+  50%      { opacity: 1; }
+}
+@keyframes glowPulseOrange {
+  0%, 100% { opacity: 0.8; }
+  50%      { opacity: 1; }
+}
+
+.hero-content {
+  position: relative;
+  z-index: 1;
+}
+
+.hero h2 {
+  font-size: 22px;
+  font-weight: 700;
+  color: white;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, #ffffff 0%, #FFD4A0 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero p {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.75);
+  margin-top: 6px;
+  letter-spacing: 0.02em;
+}
+
+.hero-stats {
+  display: flex;
+  gap: 12px;
+  margin-top: 14px;
+  flex-wrap: wrap;
+}
+
+.hero-stat {
+  padding: 6px 14px;
+  background: rgba(255, 138, 31, 0.12);
+  border: 1px solid rgba(255, 138, 31, 0.35);
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ss4-orange-glow);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  box-shadow: 0 0 12px rgba(255, 138, 31, 0.15);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.hero-stat:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 18px rgba(255, 138, 31, 0.3);
+}
+
+.hero-stat.blue {
+  background: rgba(46, 123, 255, 0.14);
+  border-color: rgba(46, 123, 255, 0.4);
+  color: #A8C6FF;
+  box-shadow: 0 0 12px rgba(46, 123, 255, 0.15);
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ======== NAVIGATION TABS ======== */
+.tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 1.5rem;
+  padding: 6px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--border-radius-lg);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  animation: fadeInUp 0.6s 0.15s backwards cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tab {
+  flex: 1;
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  border-radius: 12px;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  letter-spacing: 0.02em;
+}
+
+.tab.active {
+  color: white;
+  background: linear-gradient(135deg, var(--ss4-blue) 0%, var(--ss4-orange) 200%);
+  background-size: 200% 100%;
+  box-shadow:
+    0 4px 16px rgba(46, 123, 255, 0.4),
+    0 0 20px rgba(255, 138, 31, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.tab:hover:not(.active) {
+  color: var(--text-primary);
+  background: rgba(255, 138, 31, 0.06);
+}
+
+.section { display: none; }
+.section.active {
+  display: block;
+  animation: fadeIn 0.4s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ======== STANDINGS TABLE ======== */
+.standings-wrap {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--border-radius-lg);
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.standings-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  table-layout: fixed;
+}
+
+.standings-table thead th {
+  background: linear-gradient(180deg, rgba(46, 123, 255, 0.22), rgba(255, 138, 31, 0.1));
+  color: #E8F0FD;
+  padding: 12px 6px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--glass-orange-border);
+}
+
+.standings-table th:nth-child(2) { text-align: left; padding-left: 10px; }
+
+.standings-table td {
+  padding: 10px 6px;
+  text-align: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
+  transition: background 0.2s ease;
+}
+
+.standings-table td:nth-child(2) { text-align: left; padding-left: 10px; font-weight: 500; }
+.standings-table tr:last-child td { border-bottom: none; }
+.standings-table tr:hover td { background: rgba(255, 138, 31, 0.06); }
+
+.standings-table tr.leader td {
+  background: linear-gradient(90deg, rgba(255, 138, 31, 0.18), rgba(255, 138, 31, 0.03));
+  box-shadow: inset 3px 0 0 var(--ss4-orange);
+}
+
+/* ======== COMPONENTS ======== */
+.pos-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: 700;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.3), 0 2px 6px rgba(0,0,0,0.3);
+}
+.pos-1 {
+  background: linear-gradient(135deg, #FFD700 0%, #FF8A1F 100%);
+  color: #4A2D00;
+  box-shadow: 0 0 16px rgba(255, 138, 31, 0.55), inset 0 1px 0 rgba(255,255,255,0.4);
+  animation: goldPulse 2.5s ease-in-out infinite;
+}
+
+@keyframes goldPulse {
+  0%, 100% { box-shadow: 0 0 16px rgba(255, 138, 31, 0.5), inset 0 1px 0 rgba(255,255,255,0.4); }
+  50%      { box-shadow: 0 0 22px rgba(255, 138, 31, 0.75), inset 0 1px 0 rgba(255,255,255,0.4); }
+}
+
+.pos-2 {
+  background: linear-gradient(135deg, #E8E8E8 0%, #A8A8A8 100%);
+  color: #2A2A2A;
+}
+.pos-3 {
+  background: linear-gradient(135deg, #E39365 0%, #B06A2C 100%);
+  color: #2E1300;
+}
+.pos-other {
+  background: rgba(46, 123, 255, 0.15);
+  color: #A8C6FF;
+  border: 1px solid rgba(46, 123, 255, 0.3);
+}
+
+.pts-cell {
+  font-weight: 700;
+  color: var(--ss4-orange-glow);
+  font-size: 15px;
+  text-shadow: 0 0 12px rgba(255, 138, 31, 0.5);
+}
+
+.username {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  display: block;
+  font-weight: 400;
+  margin-top: 2px;
+}
+
+.form-dots { display: flex; gap: 4px; align-items: center; justify-content: center; }
+.form-dot {
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  flex-shrink: 0;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.2);
+  animation: formPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes formPop {
+  from { transform: scale(0); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
+.form-w { background: linear-gradient(135deg, #22C55E, #15803D); color: white; box-shadow: 0 0 8px rgba(34, 197, 94, 0.5), inset 0 1px 0 rgba(255,255,255,0.2); }
+.form-d { background: linear-gradient(135deg, var(--ss4-orange), var(--ss4-orange-deep)); color: white; box-shadow: 0 0 10px rgba(255, 138, 31, 0.55), inset 0 1px 0 rgba(255,255,255,0.2); }
+.form-l { background: linear-gradient(135deg, #EF4444, #991B1B); color: white; box-shadow: 0 0 8px rgba(239, 68, 68, 0.4), inset 0 1px 0 rgba(255,255,255,0.2); }
+.form-empty {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+}
+
+.tiebreaker-note {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  margin-top: 14px;
+  padding: 0 4px;
+  letter-spacing: 0.01em;
+}
+
+/* ======== INTERFACE ELEMENTS ======== */
+.round-selector {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.round-selector > label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ss4-orange-glow);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.round-pills {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.round-pill {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid var(--glass-orange-border);
+  background: var(--glass-bg);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition: all 0.2s ease;
+}
+
+.round-pill:hover {
+  color: var(--ss4-orange-glow);
+  border-color: rgba(255, 138, 31, 0.5);
+  background: rgba(255, 138, 31, 0.06);
+  transform: translateY(-1px);
+}
+
+.round-pill.active {
+  background: linear-gradient(135deg, var(--ss4-blue), #1A5AE6);
+  color: white;
+  border-color: transparent;
+  box-shadow: 0 4px 12px rgba(46, 123, 255, 0.5), inset 0 1px 0 rgba(255,255,255,0.2);
+}
+
+.round-pill.completed {
+  border-color: rgba(255, 138, 31, 0.6);
+  color: var(--ss4-orange-glow);
+  background: rgba(255, 138, 31, 0.1);
+  box-shadow: 0 0 10px rgba(255, 138, 31, 0.2);
+}
+
+.round-pill.active.completed {
+  background: linear-gradient(135deg, var(--ss4-orange), var(--ss4-orange-deep));
+  color: white;
+  border-color: transparent;
+  box-shadow: 0 4px 14px rgba(255, 138, 31, 0.55), inset 0 1px 0 rgba(255,255,255,0.2);
+}
+
+#round-date-label {
+  font-size: 12px;
+  color: var(--ss4-orange-glow);
+  font-weight: 600;
+  margin-bottom: 12px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  text-shadow: 0 0 12px rgba(255, 138, 31, 0.4);
+}
+
+.game-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--border-radius-md);
+  padding: 12px 16px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  animation: cardIn 0.35s ease backwards;
+}
+
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.game-card:hover {
+  border-color: rgba(255, 138, 31, 0.3);
+  background: var(--glass-bg-strong);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 24px rgba(255, 138, 31, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.player-name {
+  font-size: 13px;
+  font-weight: 600;
+  flex: 1;
+  min-width: 80px;
+  color: var(--text-primary);
+}
+
+.uname {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  font-weight: 400;
+  display: block;
+  margin-top: 2px;
+}
+
+.vs {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ss4-orange-glow);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-shadow: 0 0 8px rgba(255, 138, 31, 0.4);
+}
+
+.result-btns {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.res-btn {
+  padding: 6px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: var(--text-secondary);
+}
+
+.res-btn:hover:not(:disabled) {
+  color: var(--text-primary);
+  border-color: rgba(255, 138, 31, 0.4);
+  background: rgba(255, 138, 31, 0.06);
+}
+
+.res-btn.win {
+  background: linear-gradient(135deg, var(--ss4-blue), #1A5AE6);
+  color: white;
+  border-color: transparent;
+  box-shadow: 0 3px 10px rgba(46, 123, 255, 0.5), inset 0 1px 0 rgba(255,255,255,0.2);
+}
+
+.res-btn.draw {
+  background: linear-gradient(135deg, var(--ss4-orange), var(--ss4-orange-deep));
+  color: white;
+  border-color: transparent;
+  box-shadow: 0 3px 12px rgba(255, 138, 31, 0.55), inset 0 1px 0 rgba(255,255,255,0.2);
+}
+
+.res-btn.loss {
+  background: linear-gradient(135deg, var(--ss4-blue), #1A5AE6);
+  color: white;
+  border-color: transparent;
+  box-shadow: 0 3px 10px rgba(46, 123, 255, 0.5), inset 0 1px 0 rgba(255,255,255,0.2);
+}
+
+.save-indicator {
+  font-size: 11px;
+  font-weight: 600;
+  color: #FFB347;
+  margin-left: auto;
+  padding: 5px 12px;
+  border-radius: 20px;
+  background: rgba(255, 138, 31, 0.12);
+  border: 1px solid rgba(255, 138, 31, 0.4);
+  display: none;
+  box-shadow: 0 0 14px rgba(255, 138, 31, 0.3);
+}
+.save-indicator.show { display: inline-block; animation: pulseGlow 1.8s ease; }
+
+@keyframes pulseGlow {
+  0%   { opacity: 0; transform: scale(0.9); }
+  20%  { opacity: 1; transform: scale(1); }
+  100% { opacity: 0.8; }
+}
+
+/* ======== FIXTURES ======== */
+.fixture-round {
+  margin-bottom: 14px;
+  animation: cardIn 0.4s ease backwards;
+}
+
+.fixture-round-header {
+  background: linear-gradient(135deg, rgba(46, 123, 255, 0.3) 0%, rgba(255, 138, 31, 0.2) 100%);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-border-strong);
+  border-bottom: none;
+  color: white;
+  padding: 10px 16px;
+  border-radius: var(--border-radius-md) var(--border-radius-md) 0 0;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 -2px 12px rgba(255, 138, 31, 0.18);
+}
+
+.fixture-round-header span:last-child {
+  font-size: 11px;
+  opacity: 0.9;
+  font-weight: 600;
+  color: var(--ss4-orange-glow);
+  text-shadow: 0 0 8px rgba(255, 138, 31, 0.4);
+}
+
+.fixture-wrap {
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid var(--glass-border);
+  border-top: none;
+  border-radius: 0 0 var(--border-radius-md) var(--border-radius-md);
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+}
+
+.fixture-game {
+  display: flex;
+  align-items: center;
+  padding: 10px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  gap: 10px;
+  color: var(--text-primary);
+  transition: background 0.2s ease;
+}
+
+.fixture-game:last-child { border-bottom: none; }
+.fixture-game:hover { background: rgba(255, 138, 31, 0.05); }
+
+.fixture-game.done {
+  background: rgba(255, 138, 31, 0.06);
+  box-shadow: inset 3px 0 0 var(--ss4-orange);
+}
+
+.color-badge {
+  font-size: 10px;
+  padding: 3px 9px;
+  border-radius: 20px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  min-width: 26px;
+  text-align: center;
+}
+
+.white-badge {
+  background: rgba(255, 255, 255, 0.9);
+  color: #1a1a1a;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.2);
+}
+
+.black-badge {
+  background: rgba(0, 0, 0, 0.7);
+  color: #f0f0f0;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.result-tag {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 12px;
+  letter-spacing: 0.05em;
+  background: rgba(255, 138, 31, 0.15);
+  border: 1px solid rgba(255, 138, 31, 0.4);
+  color: var(--ss4-orange-glow);
+  text-transform: uppercase;
+  margin-left: 6px;
+}
+
+/* ======== ADMIN LOCK ======== */
+.admin-bar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin-bottom: 1rem;
+  gap: 10px;
+}
+
+.admin-status {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: 5px 12px;
+  border-radius: 20px;
+}
+
+.admin-status.locked {
+  color: var(--text-tertiary);
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--glass-border);
+}
+
+.admin-status.unlocked {
+  color: #FFB347;
+  background: rgba(255, 138, 31, 0.14);
+  border: 1px solid rgba(255, 138, 31, 0.45);
+  box-shadow: 0 0 14px rgba(255, 138, 31, 0.3);
+  animation: unlockedGlow 2.5s ease-in-out infinite;
+}
+
+@keyframes unlockedGlow {
+  0%, 100% { box-shadow: 0 0 12px rgba(255, 138, 31, 0.25); }
+  50%      { box-shadow: 0 0 18px rgba(255, 138, 31, 0.45); }
+}
+
+.admin-lock-btn {
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  letter-spacing: 0.03em;
+  border: none;
+}
+
+.admin-lock-btn.unlock {
+  background: linear-gradient(135deg, var(--ss4-orange), var(--ss4-orange-deep));
+  color: white;
+  box-shadow: 0 3px 12px rgba(255, 138, 31, 0.5), inset 0 1px 0 rgba(255,255,255,0.2);
+}
+
+.admin-lock-btn.unlock:hover {
+  box-shadow: 0 5px 20px rgba(255, 138, 31, 0.7), inset 0 1px 0 rgba(255,255,255,0.2);
+  transform: translateY(-1px);
+}
+
+.admin-lock-btn.lock {
+  background: rgba(239, 68, 68, 0.15);
+  color: #FCA5A5;
+  border: 1px solid rgba(239, 68, 68, 0.35);
+}
+
+.admin-lock-btn.lock:hover {
+  background: rgba(239, 68, 68, 0.25);
+}
+
+.view-only-notice {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  padding: 10px 14px;
+  background: rgba(46, 123, 255, 0.06);
+  border: 1px dashed rgba(46, 123, 255, 0.25);
+  border-radius: var(--border-radius-md);
+  margin-bottom: 1rem;
+  text-align: center;
+  letter-spacing: 0.02em;
+}
+
+.view-only-notice strong {
+  color: var(--ss4-orange-glow);
+  font-weight: 600;
+}
+
+/* Pin Modal */
+.pin-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(3, 7, 26, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 100;
+  align-items: center;
+  justify-content: center;
+}
+
+.pin-overlay.show { display: flex; animation: fadeIn 0.25s ease; }
+
+.pin-modal {
+  background: linear-gradient(135deg, rgba(14, 30, 70, 0.95) 0%, rgba(25, 12, 5, 0.95) 100%);
+  border: 1px solid var(--glass-orange-border);
+  border-radius: var(--border-radius-xl);
+  padding: 2rem 2rem 1.75rem;
+  width: 300px;
+  box-shadow:
+    0 24px 64px rgba(0, 0, 0, 0.6),
+    0 0 0 1px rgba(255,255,255,0.05),
+    var(--shadow-glow-orange);
+  animation: modalIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(0.92) translateY(8px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.pin-modal h3 {
+  font-size: 16px;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 4px;
+  letter-spacing: -0.01em;
+}
+
+.pin-modal p {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  margin-bottom: 1.5rem;
+}
+
+.pin-input-wrap {
+  position: relative;
+  margin-bottom: 1rem;
+}
+
+.pin-input {
+  width: 100%;
+  padding: 12px 16px;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.25em;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--glass-border-strong);
+  border-radius: 12px;
+  color: white;
+  text-align: center;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  font-family: inherit;
+}
+
+.pin-input:focus {
+  border-color: var(--ss4-orange);
+  box-shadow: 0 0 0 3px rgba(255, 138, 31, 0.2);
+}
+
+.pin-input.error {
+  border-color: #EF4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
+  animation: shake 0.35s ease;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%      { transform: translateX(-6px); }
+  40%      { transform: translateX(6px); }
+  60%      { transform: translateX(-4px); }
+  80%      { transform: translateX(4px); }
+}
+
+.pin-error-msg {
+  font-size: 11px;
+  color: #FCA5A5;
+  text-align: center;
+  min-height: 16px;
+  margin-bottom: 8px;
+}
+
+.pin-modal-btns {
+  display: flex;
+  gap: 8px;
+}
+
+.pin-submit {
+  flex: 1;
+  padding: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  background: linear-gradient(135deg, var(--ss4-orange), var(--ss4-orange-deep));
+  color: white;
+  box-shadow: 0 4px 16px rgba(255, 138, 31, 0.5), inset 0 1px 0 rgba(255,255,255,0.2);
+  transition: all 0.2s ease;
+}
+
+.pin-submit:hover {
+  box-shadow: 0 6px 22px rgba(255, 138, 31, 0.7), inset 0 1px 0 rgba(255,255,255,0.2);
+  transform: translateY(-1px);
+}
+
+.pin-cancel {
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  border: 1px solid var(--glass-border);
+  border-radius: 10px;
+  cursor: pointer;
+  background: transparent;
+  color: var(--text-secondary);
+  transition: all 0.2s ease;
+}
+
+.pin-cancel:hover {
+  color: var(--text-primary);
+  background: rgba(255,255,255,0.04);
+}
+
+.res-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* ======== RESPONSIVE ======== */
+@media (max-width: 540px) {
+  :root { --nav-height: 64px; }
+  .top-nav { padding: 8px 14px; }
+  .nav-logo { height: 40px; }
+  .nav-title h1 { font-size: 15px; }
+  .nav-title span { font-size: 9px; letter-spacing: 0.14em; }
+  .league-wrap { padding: calc(var(--nav-height) + 1rem) 0.75rem 2rem; }
+  .hero { padding: 1.25rem; }
+  .hero h2 { font-size: 18px; }
+  .tab { padding: 8px 10px; font-size: 12px; }
+  .game-card { padding: 10px 12px; gap: 8px; }
+  .standings-table thead th { padding: 10px 4px; font-size: 10px; }
+  .standings-table td { padding: 9px 4px; }
+}
+
+@media (max-width: 380px) {
+  .nav-title h1 { font-size: 13px; }
+  .hero-stats { gap: 6px; }
+  .hero-stat { padding: 5px 10px; font-size: 10px; }
+}
+</style>
+</head>
+<body>
+
+<!-- FIXED NAV BAR -->
+<nav class="top-nav">
+  <img src="SS4_logo.png" alt="SS4 Logo" class="nav-logo" onerror="this.style.display='none'">
+  <div class="nav-title">
+    <h1>SS4 Chess League</h1>
+    <span>The Board Remembers</span>
+  </div>
+</nav>
+
+<div class="league-wrap">
+
+  <!-- HERO / SEASON BANNER -->
+  <div class="hero">
+    <div class="hero-content">
+      <h2>Fork Division</h2>
+      <p>Think Deep, Play True</p>
+      <div class="hero-stats">
+        <span class="hero-stat">20 Players</span>
+        <span class="hero-stat blue">38 Rounds</span>
+        <span class="hero-stat">Win = 3 · Draw = 1 · Loss = 0</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('standings',this)">Standings</button>
+    <button class="tab" onclick="showTab('results',this)">Enter Results</button>
+    <button class="tab" onclick="showTab('fixtures',this)">Fixtures</button>
+  </div>
+
+  <div id="standings" class="section active">
+    <div class="standings-wrap">
+      <table class="standings-table">
+        <thead>
+          <tr>
+            <th style="width:40px;">#</th>
+            <th style="width:160px;">Player</th>
+            <th style="width:30px;">P</th>
+            <th style="width:30px;">W</th>
+            <th style="width:30px;">D</th>
+            <th style="width:30px;">L</th>
+            <th style="width:42px;">Pts</th>
+            <th style="width:130px;">Form</th>
+          </tr>
+        </thead>
+        <tbody id="standings-body"></tbody>
+      </table>
+    </div>
+    <p class="tiebreaker-note">Tiebreaker: head-to-head record · Form shows last 5 played games</p>
+  </div>
+
+  <div id="results" class="section">
+    <div class="admin-bar">
+      <span class="admin-status locked" id="admin-status">🔒 View Only</span>
+      <button class="admin-lock-btn unlock" id="admin-toggle-btn" onclick="toggleAdmin()">Admin Login</button>
+    </div>
+    <div class="view-only-notice" id="view-only-notice">
+      Results are <strong>view-only</strong> for visitors. Enter the admin PIN to record or update game results.
+    </div>
+    <div class="round-selector">
+      <label>Round</label>
+      <div class="round-pills" id="round-pills"></div>
+      <span class="save-indicator" id="save-indicator">✓ Saved</span>
+    </div>
+    <div id="round-date-label"></div>
+    <div id="games-list"></div>
+  </div>
+
+  <div id="fixtures" class="section">
+    <div id="fixtures-list"></div>
+  </div>
+</div>
+
+<!-- PIN Modal -->
+<div class="pin-overlay" id="pin-overlay">
+  <div class="pin-modal">
+    <h3>🔐 Admin Access</h3>
+    <p>Enter your PIN to enter or edit results.</p>
+    <div class="pin-input-wrap">
+      <input
+        class="pin-input"
+        id="pin-input"
+        type="password"
+        inputmode="numeric"
+        maxlength="8"
+        placeholder="· · · ·"
+        onkeydown="if(event.key==='Enter') submitPin()"
+      >
+    </div>
+    <div class="pin-error-msg" id="pin-error"></div>
+    <div class="pin-modal-btns">
+      <button class="pin-cancel" onclick="closeModal()">Cancel</button>
+      <button class="pin-submit" onclick="submitPin()">Unlock</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const STORAGE_KEY = 'ss4_chess_league_2026';
+
+// ── ADMIN AUTH ──────────────────────────────────────────────
+// Change this PIN to whatever you want. Keep it secret!
+const ADMIN_PIN = '1926';
+let isAdmin = false;
+
+function toggleAdmin() {
+  if (isAdmin) {
+    // Lock
+    isAdmin = false;
+    updateAdminUI();
+    renderResultsTab();
+  } else {
+    // Open modal
+    document.getElementById('pin-overlay').classList.add('show');
+    document.getElementById('pin-input').value = '';
+    document.getElementById('pin-error').textContent = '';
+    document.getElementById('pin-input').classList.remove('error');
+    setTimeout(() => document.getElementById('pin-input').focus(), 80);
+  }
+}
+
+function closeModal() {
+  document.getElementById('pin-overlay').classList.remove('show');
+}
+
+function submitPin() {
+  const val = document.getElementById('pin-input').value;
+  if (val === ADMIN_PIN) {
+    isAdmin = true;
+    closeModal();
+    updateAdminUI();
+    renderResultsTab();
+  } else {
+    const inp = document.getElementById('pin-input');
+    inp.classList.add('error');
+    document.getElementById('pin-error').textContent = 'Incorrect PIN. Try again.';
+    inp.value = '';
+    setTimeout(() => inp.classList.remove('error'), 400);
+    inp.focus();
+  }
+}
+
+function updateAdminUI() {
+  const status = document.getElementById('admin-status');
+  const btn = document.getElementById('admin-toggle-btn');
+  const notice = document.getElementById('view-only-notice');
+  if (isAdmin) {
+    status.textContent = '✓ Admin Mode';
+    status.className = 'admin-status unlocked';
+    btn.textContent = 'Lock';
+    btn.className = 'admin-lock-btn lock';
+    notice.style.display = 'none';
+  } else {
+    status.textContent = '🔒 View Only';
+    status.className = 'admin-status locked';
+    btn.textContent = 'Admin Login';
+    btn.className = 'admin-lock-btn unlock';
+    notice.style.display = 'block';
+  }
+}
+
+// Close modal if clicking outside
+document.addEventListener('click', function(e) {
+  const overlay = document.getElementById('pin-overlay');
+  if (e.target === overlay) closeModal();
+});
+// ────────────────────────────────────────────────────────────
+
+const players = [
+  { name:"Kingsley",    username:"Kontor001" },
+  { name:"Hope",        username:"Hoppei" },
+  { name:"Oliver",      username:"Emex1" },
+  { name:"Victor",      username:"Martin_the" },
+  { name:"Anietie",     username:"Jude_Ben" },
+  { name:"Mavis",       username:"Mavis1906" },
+  { name:"Chidubem",    username:"Barry26" },
+  { name:"Favour",      username:"iamfavour" },
+  { name:"Godswill",    username:"A_Godswill_E" },
+  { name:"Daniel",      username:"Dantheboyy1" },
+  { name:"Favour",      username:"donfavorr" },
+  { name:"Borngreat",   username:"Entropy65" },
+  { name:"Timilehin",   username:"Timii_lehin" },
+  { name:"Kingsley",    username:"Kdot44556" },
+  { name:"Seunn",       username:"seun_bade" },
+  { name:"Favour",      username:"Favourizo1" },
+  { name:"Enoch",       username:"21stPhenom" },
+  { name:"Nkereuwem",   username:"Fulgent47" },
+  { name:"Chilaka",     username:"chilax333" },
+  { name:"Mover",       username:"Xemover" },
+];
+
+const rounds = [
+  { round:1,  date:"Fri. 24th April",  games:[["Enoch (21stPhenom)","Hope (Hoppei)"],["Anietie (Jude_Ben)","Kingsley (Kdot44556)"],["Borngreat (Entropy65)","Chidubem (Barry26)"],["Favour (donfavorr)","Favour (iamfavour)"],["Mavis (Mavis1906)","Timilehin (Timii_lehin)"],["Nkereuwem (Fulgent47)","Kingsley (Kontor001)"],["Victor (Martin_the)","Seunn (seun_bade)"],["Mover (Xemover)","Chilaka (chilax333)"],["Daniel (Dantheboyy1)","Godswill (A_Godswill_E)"],["Favour (Favourizo1)","Oliver (Emex1)"]] },
+  { round:2,  date:"Sun. 26th April",  games:[["Kingsley (Kdot44556)","Oliver (Emex1)"],["Godswill (A_Godswill_E)","Favour (iamfavour)"],["Chilaka (chilax333)","Enoch (21stPhenom)"],["Mavis (Mavis1906)","Favour (donfavorr)"],["Chidubem (Barry26)","Daniel (Dantheboyy1)"],["Anietie (Jude_Ben)","Borngreat (Entropy65)"],["Mover (Xemover)","Nkereuwem (Fulgent47)"],["Timilehin (Timii_lehin)","Victor (Martin_the)"],["Hope (Hoppei)","Seunn (seun_bade)"],["Kingsley (Kontor001)","Favour (Favourizo1)"]] },
+  { round:3,  date:"Tue. 28th April",  games:[["Godswill (A_Godswill_E)","Mavis (Mavis1906)"],["Enoch (21stPhenom)","Mover (Xemover)"],["Kingsley (Kontor001)","Kingsley (Kdot44556)"],["Seunn (seun_bade)","Chilaka (chilax333)"],["Daniel (Dantheboyy1)","Anietie (Jude_Ben)"],["Oliver (Emex1)","Borngreat (Entropy65)"],["Favour (iamfavour)","Chidubem (Barry26)"],["Hope (Hoppei)","Timilehin (Timii_lehin)"],["Nkereuwem (Fulgent47)","Favour (Favourizo1)"],["Victor (Martin_the)","Favour (donfavorr)"]] },
+  { round:4,  date:"Thu. 30th April",  games:[["Favour (iamfavour)","Anietie (Jude_Ben)"],["Kingsley (Kdot44556)","Nkereuwem (Fulgent47)"],["Favour (donfavorr)","Hope (Hoppei)"],["Chidubem (Barry26)","Mavis (Mavis1906)"],["Favour (Favourizo1)","Mover (Xemover)"],["Godswill (A_Godswill_E)","Victor (Martin_the)"],["Oliver (Emex1)","Daniel (Dantheboyy1)"],["Seunn (seun_bade)","Enoch (21stPhenom)"],["Borngreat (Entropy65)","Kingsley (Kontor001)"],["Chilaka (chilax333)","Timilehin (Timii_lehin)"]] },
+  { round:5,  date:"Sat. 2nd May",  games:[["Hope (Hoppei)","Godswill (A_Godswill_E)"],["Mover (Xemover)","Seunn (seun_bade)"],["Favour (donfavorr)","Chilaka (chilax333)"],["Anietie (Jude_Ben)","Mavis (Mavis1906)"],["Daniel (Dantheboyy1)","Kingsley (Kontor001)"],["Oliver (Emex1)","Favour (iamfavour)"],["Kingsley (Kdot44556)","Favour (Favourizo1)"],["Borngreat (Entropy65)","Nkereuwem (Fulgent47)"],["Victor (Martin_the)","Chidubem (Barry26)"],["Timilehin (Timii_lehin)","Enoch (21stPhenom)"]] },
+  { round:6,  date:"Mon. 4th May",  games:[["Enoch (21stPhenom)","Favour (donfavorr)"],["Nkereuwem (Fulgent47)","Daniel (Dantheboyy1)"],["Mavis (Mavis1906)","Oliver (Emex1)"],["Chidubem (Barry26)","Hope (Hoppei)"],["Seunn (seun_bade)","Timilehin (Timii_lehin)"],["Anietie (Jude_Ben)","Victor (Martin_the)"],["Favour (Favourizo1)","Borngreat (Entropy65)"],["Kingsley (Kontor001)","Favour (iamfavour)"],["Chilaka (chilax333)","Godswill (A_Godswill_E)"],["Mover (Xemover)","Kingsley (Kdot44556)"]] },
+  { round:7,  date:"Wed. 6th May",  games:[["Godswill (A_Godswill_E)","Enoch (21stPhenom)"],["Kingsley (Kontor001)","Mavis (Mavis1906)"],["Timilehin (Timii_lehin)","Mover (Xemover)"],["Daniel (Dantheboyy1)","Favour (Favourizo1)"],["Favour (iamfavour)","Nkereuwem (Fulgent47)"],["Borngreat (Entropy65)","Kingsley (Kdot44556)"],["Seunn (seun_bade)","Favour (donfavorr)"],["Hope (Hoppei)","Anietie (Jude_Ben)"],["Chidubem (Barry26)","Chilaka (chilax333)"],["Victor (Martin_the)","Oliver (Emex1)"]] },
+  { round:8,  date:"Fri. 8th May",  games:[["Nkereuwem (Fulgent47)","Mavis (Mavis1906)"],["Favour (donfavorr)","Timilehin (Timii_lehin)"],["Godswill (A_Godswill_E)","Seunn (seun_bade)"],["Kingsley (Kdot44556)","Daniel (Dantheboyy1)"],["Enoch (21stPhenom)","Chidubem (Barry26)"],["Mover (Xemover)","Borngreat (Entropy65)"],["Victor (Martin_the)","Kingsley (Kontor001)"],["Favour (Favourizo1)","Favour (iamfavour)"],["Chilaka (chilax333)","Anietie (Jude_Ben)"],["Oliver (Emex1)","Hope (Hoppei)"]] },
+  { round:9,  date:"Sun. 10th May",  games:[["Anietie (Jude_Ben)","Enoch (21stPhenom)"],["Favour (iamfavour)","Kingsley (Kdot44556)"],["Mavis (Mavis1906)","Favour (Favourizo1)"],["Daniel (Dantheboyy1)","Borngreat (Entropy65)"],["Nkereuwem (Fulgent47)","Victor (Martin_the)"],["Favour (donfavorr)","Mover (Xemover)"],["Kingsley (Kontor001)","Hope (Hoppei)"],["Timilehin (Timii_lehin)","Godswill (A_Godswill_E)"],["Chilaka (chilax333)","Oliver (Emex1)"],["Chidubem (Barry26)","Seunn (seun_bade)"]] },
+  { round:10, date:"Tue. 12th May",  games:[["Kingsley (Kdot44556)","Mavis (Mavis1906)"],["Oliver (Emex1)","Enoch (21stPhenom)"],["Timilehin (Timii_lehin)","Chidubem (Barry26)"],["Kingsley (Kontor001)","Chilaka (chilax333)"],["Hope (Hoppei)","Nkereuwem (Fulgent47)"],["Borngreat (Entropy65)","Favour (iamfavour)"],["Favour (Favourizo1)","Victor (Martin_the)"],["Seunn (seun_bade)","Anietie (Jude_Ben)"],["Favour (donfavorr)","Godswill (A_Godswill_E)"],["Mover (Xemover)","Daniel (Dantheboyy1)"]] },
+  { round:11, date:"Thu. 14th May",  games:[["Favour (iamfavour)","Daniel (Dantheboyy1)"],["Oliver (Emex1)","Seunn (seun_bade)"],["Godswill (A_Godswill_E)","Mover (Xemover)"],["Mavis (Mavis1906)","Borngreat (Entropy65)"],["Victor (Martin_the)","Kingsley (Kdot44556)"],["Anietie (Jude_Ben)","Timilehin (Timii_lehin)"],["Enoch (21stPhenom)","Kingsley (Kontor001)"],["Nkereuwem (Fulgent47)","Chilaka (chilax333)"],["Favour (Favourizo1)","Hope (Hoppei)"],["Chidubem (Barry26)","Favour (donfavorr)"]] },
+  { round:12, date:"Sat. 16th May",  games:[["Timilehin (Timii_lehin)","Oliver (Emex1)"],["Favour (donfavorr)","Anietie (Jude_Ben)"],["Borngreat (Entropy65)","Victor (Martin_the)"],["Mavis (Mavis1906)","Daniel (Dantheboyy1)"],["Favour (iamfavour)","Mover (Xemover)"],["Hope (Hoppei)","Kingsley (Kdot44556)"],["Enoch (21stPhenom)","Nkereuwem (Fulgent47)"],["Godswill (A_Godswill_E)","Chidubem (Barry26)"],["Seunn (seun_bade)","Kingsley (Kontor001)"],["Chilaka (chilax333)","Favour (Favourizo1)"]] },
+  { round:13, date:"Mon. 18th May",  games:[["Oliver (Emex1)","Favour (donfavorr)"],["Mover (Xemover)","Chidubem (Barry26)"],["Kingsley (Kontor001)","Timilehin (Timii_lehin)"],["Nkereuwem (Fulgent47)","Seunn (seun_bade)"],["Kingsley (Kdot44556)","Chilaka (chilax333)"],["Enoch (21stPhenom)","Favour (Favourizo1)"],["Anietie (Jude_Ben)","Godswill (A_Godswill_E)"],["Daniel (Dantheboyy1)","Victor (Martin_the)"],["Mavis (Mavis1906)","Favour (iamfavour)"],["Borngreat (Entropy65)","Hope (Hoppei)"]] },
+  { round:14, date:"Wed. 20th May",  games:[["Kingsley (Kdot44556)","Enoch (21stPhenom)"],["Mover (Xemover)","Mavis (Mavis1906)"],["Timilehin (Timii_lehin)","Nkereuwem (Fulgent47)"],["Hope (Hoppei)","Daniel (Dantheboyy1)"],["Kingsley (Kontor001)","Favour (donfavorr)"],["Godswill (A_Godswill_E)","Oliver (Emex1)"],["Favour (iamfavour)","Victor (Martin_the)"],["Chilaka (chilax333)","Borngreat (Entropy65)"],["Favour (Favourizo1)","Seunn (seun_bade)"],["Chidubem (Barry26)","Anietie (Jude_Ben)"]] },
+  { round:15, date:"Fri. 22nd May",  games:[["Chidubem (Barry26)","Oliver (Emex1)"],["Nkereuwem (Fulgent47)","Favour (donfavorr)"],["Anietie (Jude_Ben)","Mover (Xemover)"],["Daniel (Dantheboyy1)","Chilaka (chilax333)"],["Victor (Martin_the)","Mavis (Mavis1906)"],["Enoch (21stPhenom)","Borngreat (Entropy65)"],["Kingsley (Kontor001)","Godswill (A_Godswill_E)"],["Timilehin (Timii_lehin)","Favour (Favourizo1)"],["Seunn (seun_bade)","Kingsley (Kdot44556)"],["Favour (iamfavour)","Hope (Hoppei)"]] },
+  { round:16, date:"Sun. 24th May",  games:[["Kingsley (Kdot44556)","Timilehin (Timii_lehin)"],["Hope (Hoppei)","Mavis (Mavis1906)"],["Chidubem (Barry26)","Kingsley (Kontor001)"],["Daniel (Dantheboyy1)","Enoch (21stPhenom)"],["Favour (Favourizo1)","Favour (donfavorr)"],["Chilaka (chilax333)","Favour (iamfavour)"],["Godswill (A_Godswill_E)","Nkereuwem (Fulgent47)"],["Victor (Martin_the)","Mover (Xemover)"],["Oliver (Emex1)","Anietie (Jude_Ben)"],["Borngreat (Entropy65)","Seunn (seun_bade)"]] },
+  { round:17, date:"Tue. 26th May",  games:[["Seunn (seun_bade)","Daniel (Dantheboyy1)"],["Nkereuwem (Fulgent47)","Chidubem (Barry26)"],["Hope (Hoppei)","Victor (Martin_the)"],["Favour (iamfavour)","Enoch (21stPhenom)"],["Favour (donfavorr)","Kingsley (Kdot44556)"],["Borngreat (Entropy65)","Timilehin (Timii_lehin)"],["Mavis (Mavis1906)","Chilaka (chilax333)"],["Oliver (Emex1)","Mover (Xemover)"],["Favour (Favourizo1)","Godswill (A_Godswill_E)"],["Anietie (Jude_Ben)","Kingsley (Kontor001)"]] },
+  { round:18, date:"Thu. 28th May",  games:[["Chidubem (Barry26)","Favour (Favourizo1)"],["Anietie (Jude_Ben)","Nkereuwem (Fulgent47)"],["Chilaka (chilax333)","Victor (Martin_the)"],["Daniel (Dantheboyy1)","Timilehin (Timii_lehin)"],["Kingsley (Kontor001)","Oliver (Emex1)"],["Seunn (seun_bade)","Favour (iamfavour)"],["Mavis (Mavis1906)","Enoch (21stPhenom)"],["Kingsley (Kdot44556)","Godswill (A_Godswill_E)"],["Favour (donfavorr)","Borngreat (Entropy65)"],["Mover (Xemover)","Hope (Hoppei)"]] },
+  { round:19, date:"Sat. 30th May",  games:[["Kingsley (Kdot44556)","Chidubem (Barry26)"],["Mavis (Mavis1906)","Seunn (seun_bade)"],["Hope (Hoppei)","Chilaka (chilax333)"],["Nkereuwem (Fulgent47)","Oliver (Emex1)"],["Borngreat (Entropy65)","Godswill (A_Godswill_E)"],["Timilehin (Timii_lehin)","Favour (iamfavour)"],["Favour (Favourizo1)","Anietie (Jude_Ben)"],["Mover (Xemover)","Kingsley (Kontor001)"],["Enoch (21stPhenom)","Victor (Martin_the)"],["Daniel (Dantheboyy1)","Favour (donfavorr)"]] },
+  { round:20, date:"Mon. 1st June",  games:[["Chilaka (chilax333)","Mover (Xemover)"],["Hope (Hoppei)","Enoch (21stPhenom)"],["Oliver (Emex1)","Favour (Favourizo1)"],["Seunn (seun_bade)","Victor (Martin_the)"],["Chidubem (Barry26)","Borngreat (Entropy65)"],["Kingsley (Kdot44556)","Anietie (Jude_Ben)"],["Godswill (A_Godswill_E)","Daniel (Dantheboyy1)"],["Timilehin (Timii_lehin)","Mavis (Mavis1906)"],["Favour (iamfavour)","Favour (donfavorr)"],["Kingsley (Kontor001)","Nkereuwem (Fulgent47)"]] },
+  { round:21, date:"Wed. 3rd June",  games:[["Favour (donfavorr)","Mavis (Mavis1906)"],["Borngreat (Entropy65)","Anietie (Jude_Ben)"],["Nkereuwem (Fulgent47)","Mover (Xemover)"],["Enoch (21stPhenom)","Chilaka (chilax333)"],["Seunn (seun_bade)","Hope (Hoppei)"],["Daniel (Dantheboyy1)","Chidubem (Barry26)"],["Favour (Favourizo1)","Kingsley (Kontor001)"],["Favour (iamfavour)","Godswill (A_Godswill_E)"],["Victor (Martin_the)","Timilehin (Timii_lehin)"],["Oliver (Emex1)","Kingsley (Kdot44556)"]] },
+  { round:22, date:"Fri. 5th June",  games:[["Timilehin (Timii_lehin)","Hope (Hoppei)"],["Mavis (Mavis1906)","Godswill (A_Godswill_E)"],["Anietie (Jude_Ben)","Daniel (Dantheboyy1)"],["Chidubem (Barry26)","Favour (iamfavour)"],["Favour (Favourizo1)","Nkereuwem (Fulgent47)"],["Favour (donfavorr)","Victor (Martin_the)"],["Kingsley (Kdot44556)","Kingsley (Kontor001)"],["Borngreat (Entropy65)","Oliver (Emex1)"],["Chilaka (chilax333)","Seunn (seun_bade)"],["Mover (Xemover)","Enoch (21stPhenom)"]] },
+  { round:23, date:"Sun. 7th June",  games:[["Daniel (Dantheboyy1)","Oliver (Emex1)"],["Mavis (Mavis1906)","Chidubem (Barry26)"],["Victor (Martin_the)","Godswill (A_Godswill_E)"],["Timilehin (Timii_lehin)","Chilaka (chilax333)"],["Anietie (Jude_Ben)","Favour (iamfavour)"],["Hope (Hoppei)","Favour (donfavorr)"],["Enoch (21stPhenom)","Seunn (seun_bade)"],["Nkereuwem (Fulgent47)","Kingsley (Kdot44556)"],["Mover (Xemover)","Favour (Favourizo1)"],["Kingsley (Kontor001)","Borngreat (Entropy65)"]] },
+  { round:24, date:"Tue. 9th June",  games:[["Godswill (A_Godswill_E)","Hope (Hoppei)"],["Chidubem (Barry26)","Victor (Martin_the)"],["Nkereuwem (Fulgent47)","Borngreat (Entropy65)"],["Favour (Favourizo1)","Kingsley (Kdot44556)"],["Seunn (seun_bade)","Mover (Xemover)"],["Chilaka (chilax333)","Favour (donfavorr)"],["Favour (iamfavour)","Oliver (Emex1)"],["Mavis (Mavis1906)","Anietie (Jude_Ben)"],["Enoch (21stPhenom)","Timilehin (Timii_lehin)"],["Kingsley (Kontor001)","Daniel (Dantheboyy1)"]] },
+  { round:25, date:"Thu. 11th June",  games:[["Kingsley (Kdot44556)","Mover (Xemover)"],["Favour (iamfavour)","Kingsley (Kontor001)"],["Borngreat (Entropy65)","Favour (Favourizo1)"],["Godswill (A_Godswill_E)","Chilaka (chilax333)"],["Oliver (Emex1)","Mavis (Mavis1906)"],["Hope (Hoppei)","Chidubem (Barry26)"],["Victor (Martin_the)","Anietie (Jude_Ben)"],["Daniel (Dantheboyy1)","Nkereuwem (Fulgent47)"],["Favour (donfavorr)","Enoch (21stPhenom)"],["Timilehin (Timii_lehin)","Seunn (seun_bade)"]] },
+  { round:26, date:"Sat. 13th June",  games:[["Mavis (Mavis1906)","Kingsley (Kontor001)"],["Enoch (21stPhenom)","Godswill (A_Godswill_E)"],["Anietie (Jude_Ben)","Hope (Hoppei)"],["Favour (donfavorr)","Seunn (seun_bade)"],["Chilaka (chilax333)","Chidubem (Barry26)"],["Favour (Favourizo1)","Daniel (Dantheboyy1)"],["Kingsley (Kdot44556)","Borngreat (Entropy65)"],["Oliver (Emex1)","Victor (Martin_the)"],["Nkereuwem (Fulgent47)","Favour (iamfavour)"],["Mover (Xemover)","Timilehin (Timii_lehin)"]] },
+  { round:27, date:"Mon. 15th June",  games:[["Kingsley (Kontor001)","Victor (Martin_the)"],["Borngreat (Entropy65)","Mover (Xemover)"],["Daniel (Dantheboyy1)","Kingsley (Kdot44556)"],["Anietie (Jude_Ben)","Chilaka (chilax333)"],["Favour (iamfavour)","Favour (Favourizo1)"],["Mavis (Mavis1906)","Nkereuwem (Fulgent47)"],["Chidubem (Barry26)","Enoch (21stPhenom)"],["Seunn (seun_bade)","Godswill (A_Godswill_E)"],["Hope (Hoppei)","Oliver (Emex1)"],["Timilehin (Timii_lehin)","Favour (donfavorr)"]] },
+  { round:28, date:"Wed. 17th June",  games:[["Borngreat (Entropy65)","Daniel (Dantheboyy1)"],["Godswill (A_Godswill_E)","Timilehin (Timii_lehin)"],["Oliver (Emex1)","Chilaka (chilax333)"],["Kingsley (Kdot44556)","Favour (iamfavour)"],["Favour (Favourizo1)","Mavis (Mavis1906)"],["Seunn (seun_bade)","Chidubem (Barry26)"],["Hope (Hoppei)","Kingsley (Kontor001)"],["Mover (Xemover)","Favour (donfavorr)"],["Victor (Martin_the)","Nkereuwem (Fulgent47)"],["Enoch (21stPhenom)","Anietie (Jude_Ben)"]] },
+  { round:29, date:"Fri. 19th June",  games:[["Chilaka (chilax333)","Kingsley (Kontor001)"],["Chidubem (Barry26)","Timilehin (Timii_lehin)"],["Mavis (Mavis1906)","Kingsley (Kdot44556)"],["Anietie (Jude_Ben)","Seunn (seun_bade)"],["Daniel (Dantheboyy1)","Mover (Xemover)"],["Godswill (A_Godswill_E)","Favour (donfavorr)"],["Nkereuwem (Fulgent47)","Hope (Hoppei)"],["Victor (Martin_the)","Favour (Favourizo1)"],["Favour (iamfavour)","Borngreat (Entropy65)"],["Enoch (21stPhenom)","Oliver (Emex1)"]] },
+  { round:30, date:"Sun. 21st June",  games:[["Favour (donfavorr)","Chidubem (Barry26)"],["Hope (Hoppei)","Favour (Favourizo1)"],["Kingsley (Kdot44556)","Victor (Martin_the)"],["Seunn (seun_bade)","Oliver (Emex1)"],["Borngreat (Entropy65)","Mavis (Mavis1906)"],["Chilaka (chilax333)","Nkereuwem (Fulgent47)"],["Timilehin (Timii_lehin)","Anietie (Jude_Ben)"],["Mover (Xemover)","Godswill (A_Godswill_E)"],["Daniel (Dantheboyy1)","Favour (iamfavour)"],["Kingsley (Kontor001)","Enoch (21stPhenom)"]] },
+  { round:31, date:"Tue. 23rd June",  games:[["Chidubem (Barry26)","Godswill (A_Godswill_E)"],["Victor (Martin_the)","Borngreat (Entropy65)"],["Kingsley (Kdot44556)","Hope (Hoppei)"],["Mover (Xemover)","Favour (iamfavour)"],["Favour (Favourizo1)","Chilaka (chilax333)"],["Daniel (Dantheboyy1)","Mavis (Mavis1906)"],["Kingsley (Kontor001)","Seunn (seun_bade)"],["Oliver (Emex1)","Timilehin (Timii_lehin)"],["Nkereuwem (Fulgent47)","Enoch (21stPhenom)"],["Anietie (Jude_Ben)","Favour (donfavorr)"]] },
+  { round:32, date:"Thu. 25th June",  games:[["Godswill (A_Godswill_E)","Anietie (Jude_Ben)"],["Timilehin (Timii_lehin)","Kingsley (Kontor001)"],["Hope (Hoppei)","Borngreat (Entropy65)"],["Victor (Martin_the)","Daniel (Dantheboyy1)"],["Chidubem (Barry26)","Mover (Xemover)"],["Favour (Favourizo1)","Enoch (21stPhenom)"],["Favour (donfavorr)","Oliver (Emex1)"],["Favour (iamfavour)","Mavis (Mavis1906)"],["Seunn (seun_bade)","Nkereuwem (Fulgent47)"],["Chilaka (chilax333)","Kingsley (Kdot44556)"]] },
+  { round:33, date:"Sat. 27th June",  games:[["Anietie (Jude_Ben)","Chidubem (Barry26)"],["Victor (Martin_the)","Favour (iamfavour)"],["Enoch (21stPhenom)","Kingsley (Kdot44556)"],["Nkereuwem (Fulgent47)","Timilehin (Timii_lehin)"],["Daniel (Dantheboyy1)","Hope (Hoppei)"],["Seunn (seun_bade)","Favour (Favourizo1)"],["Borngreat (Entropy65)","Chilaka (chilax333)"],["Oliver (Emex1)","Godswill (A_Godswill_E)"],["Favour (donfavorr)","Kingsley (Kontor001)"],["Mavis (Mavis1906)","Mover (Xemover)"]] },
+  { round:34, date:"Mon. 29th June",  games:[["Borngreat (Entropy65)","Enoch (21stPhenom)"],["Kingsley (Kdot44556)","Seunn (seun_bade)"],["Favour (donfavorr)","Nkereuwem (Fulgent47)"],["Chilaka (chilax333)","Daniel (Dantheboyy1)"],["Favour (Favourizo1)","Timilehin (Timii_lehin)"],["Godswill (A_Godswill_E)","Kingsley (Kontor001)"],["Oliver (Emex1)","Chidubem (Barry26)"],["Hope (Hoppei)","Favour (iamfavour)"],["Mover (Xemover)","Anietie (Jude_Ben)"],["Mavis (Mavis1906)","Victor (Martin_the)"]] },
+  { round:35, date:"Wed. 1st July",  games:[["Seunn (seun_bade)","Borngreat (Entropy65)"],["Favour (iamfavour)","Chilaka (chilax333)"],["Timilehin (Timii_lehin)","Kingsley (Kdot44556)"],["Kingsley (Kontor001)","Chidubem (Barry26)"],["Mover (Xemover)","Victor (Martin_the)"],["Favour (donfavorr)","Favour (Favourizo1)"],["Enoch (21stPhenom)","Daniel (Dantheboyy1)"],["Mavis (Mavis1906)","Hope (Hoppei)"],["Anietie (Jude_Ben)","Oliver (Emex1)"],["Nkereuwem (Fulgent47)","Godswill (A_Godswill_E)"]] },
+  { round:36, date:"Fri. 3rd July",  games:[["Kingsley (Kdot44556)","Favour (donfavorr)"],["Chidubem (Barry26)","Nkereuwem (Fulgent47)"],["Timilehin (Timii_lehin)","Borngreat (Entropy65)"],["Chilaka (chilax333)","Mavis (Mavis1906)"],["Kingsley (Kontor001)","Anietie (Jude_Ben)"],["Mover (Xemover)","Oliver (Emex1)"],["Victor (Martin_the)","Hope (Hoppei)"],["Enoch (21stPhenom)","Favour (iamfavour)"],["Godswill (A_Godswill_E)","Favour (Favourizo1)"],["Daniel (Dantheboyy1)","Seunn (seun_bade)"]] },
+  { round:37, date:"Sun. 5th July",  games:[["Favour (Favourizo1)","Chidubem (Barry26)"],["Hope (Hoppei)","Mover (Xemover)"],["Godswill (A_Godswill_E)","Kingsley (Kdot44556)"],["Enoch (21stPhenom)","Mavis (Mavis1906)"],["Victor (Martin_the)","Chilaka (chilax333)"],["Timilehin (Timii_lehin)","Daniel (Dantheboyy1)"],["Favour (iamfavour)","Seunn (seun_bade)"],["Borngreat (Entropy65)","Favour (donfavorr)"],["Oliver (Emex1)","Kingsley (Kontor001)"],["Nkereuwem (Fulgent47)","Anietie (Jude_Ben)"]] },
+  { round:38, date:"Tue. 7th July",  games:[["Chidubem (Barry26)","Kingsley (Kdot44556)"],["Godswill (A_Godswill_E)","Borngreat (Entropy65)"],["Favour (donfavorr)","Daniel (Dantheboyy1)"],["Seunn (seun_bade)","Mavis (Mavis1906)"],["Anietie (Jude_Ben)","Favour (Favourizo1)"],["Favour (iamfavour)","Timilehin (Timii_lehin)"],["Kingsley (Kontor001)","Mover (Xemover)"],["Oliver (Emex1)","Nkereuwem (Fulgent47)"],["Chilaka (chilax333)","Hope (Hoppei)"],["Victor (Martin_the)","Enoch (21stPhenom)"]] },
+];
+
+// ── HELPERS ────────────────────────────────────────────────
+// Since two players can share a first name ("Kingsley", "Favour"), we uniquely
+// identify a player by the full label shown in fixtures, e.g. "Kingsley (Kontor001)".
+// This avoids collisions in standings, h2h and lookups.
+
+function playerLabel(p) { return `${p.name} (${p.username})`; }
+
+// Build a lookup by label -> player object
+const playerByLabel = {};
+players.forEach(p => { playerByLabel[playerLabel(p)] = p; });
+
+// Extract username from a "Name (username)" fixture string
+function extractUsername(label) {
+  const m = label.match(/\(([^)]+)\)\s*$/);
+  return m ? m[1] : '';
+}
+
+function getPlayerByLabel(label) {
+  if (playerByLabel[label]) return playerByLabel[label];
+  // Fallback: match on username parsed from label
+  const u = extractUsername(label);
+  return players.find(p => p.username === u) || { name: label, username: '' };
+}
+
+function loadResults() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch(e) { return {}; }
+}
+
+function saveResults() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(gameResults));
+    const ind = document.getElementById('save-indicator');
+    ind.classList.add('show');
+    clearTimeout(ind._t);
+    ind._t = setTimeout(() => ind.classList.remove('show'), 1800);
+  } catch(e) {}
+}
+
+let gameResults = loadResults();
+let currentRound = 1;
+
+function gameKey(round, white, black) { return `R${round}_${white}_${black}`; }
+
+// ── STANDINGS ──────────────────────────────────────────────
+function calcStandings() {
+  let stats = {};
+  // Key stats by label to uniquely identify duplicate first-names
+  players.forEach(p => {
+    const lbl = playerLabel(p);
+    stats[lbl] = { label: lbl, name:p.name, username:p.username, P:0, W:0, D:0, L:0, Pts:0, h2h:{}, history:[] };
+  });
+
+  rounds.forEach(r => {
+    r.games.forEach(([w, b]) => {
+      const key = gameKey(r.round, w, b);
+      const res = gameResults[key];
+      if (!res) return;
+      if (!stats[w] || !stats[b]) return;
+      stats[w].P++; stats[b].P++;
+      if (res === 'white') {
+        stats[w].W++; stats[w].Pts += 3; stats[b].L++;
+        stats[w].h2h[b] = (stats[w].h2h[b]||0) + 3;
+        stats[w].history.push('W'); stats[b].history.push('L');
+      } else if (res === 'draw') {
+        stats[w].D++; stats[w].Pts += 1; stats[b].D++; stats[b].Pts += 1;
+        stats[w].h2h[b] = (stats[w].h2h[b]||0) + 1; stats[b].h2h[w] = (stats[b].h2h[w]||0) + 1;
+        stats[w].history.push('D'); stats[b].history.push('D');
+      } else {
+        stats[b].W++; stats[b].Pts += 3; stats[w].L++;
+        stats[b].h2h[w] = (stats[b].h2h[w]||0) + 3;
+        stats[b].history.push('W'); stats[w].history.push('L');
+      }
+    });
+  });
+
+  return Object.values(stats).sort((a,b) => {
+    if (b.Pts !== a.Pts) return b.Pts - a.Pts;
+    // Head-to-head between these two
+    const aVsB = a.h2h[b.label] || 0;
+    const bVsA = b.h2h[a.label] || 0;
+    if (bVsA !== aVsB) return bVsA - aVsB;
+    // Fallback: more wins, then fewer losses, then alphabetical
+    if (b.W !== a.W) return b.W - a.W;
+    if (a.L !== b.L) return a.L - b.L;
+    return a.name.localeCompare(b.name);
+  });
+}
+
+function formDot(result) {
+  if (!result) return '<span class="form-empty"></span>';
+  const cls = result==='W'?'form-w':result==='D'?'form-d':'form-l';
+  const label = result==='W'?'&#10003;':result==='D'?'&minus;':'&#10007;';
+  return `<span class="form-dot ${cls}">${label}</span>`;
+}
+
+function renderStandings() {
+  const data = calcStandings();
+  const body = document.getElementById('standings-body');
+  body.innerHTML = '';
+  data.forEach((p, i) => {
+    const pos = i + 1;
+    const bc = pos===1?'pos-1':pos===2?'pos-2':pos===3?'pos-3':'pos-other';
+    const last5 = p.history.slice(-5);
+    while (last5.length < 5) last5.unshift(null);
+    const formHtml = '<div class="form-dots">' + last5.map(formDot).join('') + '</div>';
+    const tr = document.createElement('tr');
+    if (pos === 1 && p.P > 0) tr.classList.add('leader');
+    tr.innerHTML = `
+      <td><span class="pos-badge ${bc}">${pos}</span></td>
+      <td>${p.name}<span class="username">@${p.username}</span></td>
+      <td>${p.P}</td><td>${p.W}</td><td>${p.D}</td><td>${p.L}</td>
+      <td class="pts-cell">${p.Pts}</td>
+      <td>${formHtml}</td>`;
+    body.appendChild(tr);
+  });
+}
+
+// ── RESULTS TAB ────────────────────────────────────────────
+function renderRoundPills() {
+  const container = document.getElementById('round-pills');
+  container.innerHTML = '';
+  rounds.forEach(r => {
+    const allDone = r.games.every(([w,b]) => gameResults[gameKey(r.round,w,b)]);
+    const btn = document.createElement('button');
+    btn.className = 'round-pill' + (r.round===currentRound?' active':'') + (allDone?' completed':'');
+    btn.textContent = `R${r.round}`;
+    btn.onclick = () => { currentRound = r.round; renderResultsTab(); };
+    container.appendChild(btn);
+  });
+}
+
+function renderResultsTab() {
+  renderRoundPills();
+  const r = rounds[currentRound - 1];
+  document.getElementById('round-date-label').textContent = r.date;
+  const list = document.getElementById('games-list');
+  list.innerHTML = '';
+  r.games.forEach(([w, b], idx) => {
+    const key = gameKey(r.round, w, b);
+    const res = gameResults[key];
+    const wP = getPlayerByLabel(w);
+    const bP = getPlayerByLabel(b);
+    const card = document.createElement('div');
+    card.className = 'game-card';
+    card.style.animationDelay = (idx * 0.03) + 's';
+    card.innerHTML = `
+      <div class="player-name">${wP.name}<span class="uname">@${wP.username}</span></div>
+      <span class="vs">vs</span>
+      <div class="player-name" style="text-align:right;">${bP.name}<span class="uname">@${bP.username}</span></div>
+      <div class="result-btns">
+        <button class="res-btn ${res==='white'?'win':''}" ${isAdmin?'':'disabled'} onclick="setResult('${key}','white')">${wP.name} wins</button>
+        <button class="res-btn ${res==='draw'?'draw':''}" ${isAdmin?'':'disabled'} onclick="setResult('${key}','draw')">Draw</button>
+        <button class="res-btn ${res==='black'?'loss':''}" ${isAdmin?'':'disabled'} onclick="setResult('${key}','black')">${bP.name} wins</button>
+      </div>`;
+    list.appendChild(card);
+  });
+}
+
+function setResult(key, result) {
+  if (!isAdmin) return; // Extra safety
+  if (gameResults[key] === result) delete gameResults[key];
+  else gameResults[key] = result;
+  saveResults();
+  renderResultsTab();
+  renderStandings();
+  renderFixtures();
+}
+
+// ── FIXTURES ───────────────────────────────────────────────
+function renderFixtures() {
+  const container = document.getElementById('fixtures-list');
+  container.innerHTML = '';
+  rounds.forEach((r, ri) => {
+    const div = document.createElement('div');
+    div.className = 'fixture-round';
+    div.style.animationDelay = Math.min(ri * 0.015, 0.4) + 's';
+    div.innerHTML = `<div class="fixture-round-header"><span>Round ${r.round}</span><span>${r.date}</span></div>`;
+    const wrap = document.createElement('div');
+    wrap.className = 'fixture-wrap';
+    r.games.forEach(([w, b]) => {
+      const res = gameResults[gameKey(r.round, w, b)];
+      const wP = getPlayerByLabel(w);
+      const bP = getPlayerByLabel(b);
+      let tag = '';
+      if (res === 'white') tag = `<span class="result-tag">${wP.name} W</span>`;
+      else if (res === 'black') tag = `<span class="result-tag">${bP.name} W</span>`;
+      else if (res === 'draw') tag = `<span class="result-tag">Draw</span>`;
+      const row = document.createElement('div');
+      row.className = 'fixture-game' + (res ? ' done' : '');
+      row.innerHTML = `
+        <span class="color-badge white-badge">W</span>
+        <div style="flex:1">${wP.name}<span class="uname" style="font-size:10px">@${wP.username}</span></div>
+        <span style="font-size:11px; color:var(--ss4-orange-glow); width:24px; text-align:center; font-weight:700; letter-spacing:0.1em;">vs</span>
+        <div style="flex:1; text-align:right">${bP.name}<span class="uname" style="font-size:10px">@${bP.username}</span></div>
+        <span class="color-badge black-badge">B</span>
+        ${tag}`;
+      wrap.appendChild(row);
+    });
+    div.appendChild(wrap);
+    container.appendChild(div);
+  });
+}
+
+// ── TABS ───────────────────────────────────────────────────
+function showTab(tab, el) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById(tab).classList.add('active');
+  el.classList.add('active');
+}
+
+// ── INIT ───────────────────────────────────────────────────
+updateAdminUI();
+renderStandings();
+renderResultsTab();
+renderFixtures();
+</script>
+
+</body>
+</html>
