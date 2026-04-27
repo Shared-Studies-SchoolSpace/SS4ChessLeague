@@ -1,2 +1,2 @@
 # SS4ChessLeague
-Where Cerebral Chess Players Converse. 
+Where Cerebral Chess Players Converge. 
