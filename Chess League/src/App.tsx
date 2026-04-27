@@ -1,12 +1,24 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { players, rounds, Player, Round } from './data';
+import { players as initialPlayers, rounds as initialRounds } from './data';
+import type { Player, Round } from './data';
+import { generateRoundRobin } from './pairing';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import './App.css';
 
-const STORAGE_KEY = 'ss4_chess_league_2026';
+const STORAGE_KEY = 'ss4_chess_league_2026_v2';
+const RESULTS_KEY = 'ss4_chess_league_results_v2';
 const ADMIN_PIN = '1926';
 
 type Result = 'white' | 'black' | 'draw' | null;
 type GameResults = Record<string, Result>;
+
+interface Division {
+  id: string;
+  name: string;
+  players: Player[];
+  rounds: Round[];
+}
 
 interface StandingEntry {
   label: string;
@@ -22,35 +34,77 @@ interface StandingEntry {
 }
 
 function playerLabel(p: Player) { return `${p.name} (${p.username})`; }
-function gameKey(round: number, white: string, black: string) { return `R${round}_${white}_${black}`; }
+function gameKey(divisionId: string, round: number, white: string, black: string) { 
+  return `${divisionId}_R${round}_${white}_${black}`; 
+}
 
 const App: React.FC = () => {
-  const [gameResults, setGameResults] = useState<GameResults>(() => {
+  const [divisions, setDivisions] = useState<Division[]>(() => {
     const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : {};
+    if (raw) return JSON.parse(raw);
+    return [{
+      id: 'default',
+      name: 'Fork Division',
+      players: initialPlayers,
+      rounds: initialRounds
+    }];
   });
-  const [activeTab, setActiveTab] = useState<'standings' | 'results' | 'fixtures'>('standings');
+
+  const [selectedDivisionId, setSelectedDivisionId] = useState<string>(divisions[0].id);
+  const [gameResults, setGameResults] = useState<GameResults>(() => {
+    const raw = localStorage.getItem(RESULTS_KEY);
+    const results = raw ? JSON.parse(raw) : {};
+    
+    // Migration: Check for old storage key and migrate to 'default' division
+    const oldRaw = localStorage.getItem('ss4_chess_league_2026');
+    if (oldRaw) {
+      const oldResults = JSON.parse(oldRaw);
+      Object.keys(oldResults).forEach(key => {
+        // Only migrate if not already present in new format
+        const newKey = `default_${key}`;
+        if (!results[newKey]) {
+          results[newKey] = oldResults[key];
+        }
+      });
+      // Optionally clear old data after migration
+      // localStorage.removeItem('ss4_chess_league_2026');
+    }
+    return results;
+  });
+
+  const [activeTab, setActiveTab] = useState<'standings' | 'results' | 'fixtures' | 'admin'>('standings');
   const [currentRound, setCurrentRound] = useState(1);
   const [isAdmin, setIsAdmin] = useState(false);
   const [showPinModal, setShowPinModal] = useState(false);
   const [pinInput, setPinInput] = useState('');
   const [pinError, setPinError] = useState('');
-  const [showSaved, setShowSaved] = useState(false);
+
+  // Division creation state
+  const [newDivName, setNewDivName] = useState('');
+  const [newDivPlayers, setNewDivPlayers] = useState('');
+
+  const currentDivision = useMemo(() => 
+    divisions.find(d => d.id === selectedDivisionId) || divisions[0]
+  , [divisions, selectedDivisionId]);
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(gameResults));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(divisions));
+  }, [divisions]);
+
+  useEffect(() => {
+    localStorage.setItem(RESULTS_KEY, JSON.stringify(gameResults));
   }, [gameResults]);
 
   const standings = useMemo(() => {
     const stats: Record<string, StandingEntry> = {};
-    players.forEach(p => {
+    currentDivision.players.forEach(p => {
       const lbl = playerLabel(p);
       stats[lbl] = { label: lbl, name: p.name, username: p.username, P: 0, W: 0, D: 0, L: 0, Pts: 0, h2h: {}, history: [] };
     });
 
-    rounds.forEach(r => {
+    currentDivision.rounds.forEach(r => {
       r.games.forEach(([w, b]) => {
-        const key = gameKey(r.round, w, b);
+        const key = gameKey(currentDivision.id, r.round, w, b);
         const res = gameResults[key];
         if (!res || !stats[w] || !stats[b]) return;
 
@@ -80,7 +134,7 @@ const App: React.FC = () => {
       if (a.L !== b.L) return a.L - b.L;
       return a.name.localeCompare(b.name);
     });
-  }, [gameResults]);
+  }, [gameResults, currentDivision]);
 
   const handleSetResult = (key: string, result: Result) => {
     if (!isAdmin) return;
@@ -90,27 +144,79 @@ const App: React.FC = () => {
       else next[key] = result;
       return next;
     });
-    setShowSaved(true);
-    setTimeout(() => setShowSaved(false), 1800);
+    toast.success('Result updated!', { autoClose: 1000, theme: 'dark' });
   };
 
+  const [lastTap, setLastTap] = useState(0);
   const handleAdminToggle = () => {
-    if (isAdmin) setIsAdmin(false);
-    else {
+    if (isAdmin) {
+      setIsAdmin(false);
+      if (activeTab === 'admin') setActiveTab('standings');
+      toast.info('Logged out from admin', { theme: 'dark' });
+    } else {
       setPinInput('');
       setPinError('');
       setShowPinModal(true);
     }
   };
 
+  const handleTouchStart = () => {
+    const now = Date.now();
+    if (now - lastTap < 300) {
+      handleAdminToggle();
+    }
+    setLastTap(now);
+  };
+
   const submitPin = () => {
     if (pinInput === ADMIN_PIN) {
       setIsAdmin(true);
       setShowPinModal(false);
+      toast.success('Admin access granted!', { theme: 'dark' });
     } else {
       setPinError('Incorrect PIN. Try again.');
       setPinInput('');
     }
+  };
+
+  const handleCreateDivision = () => {
+    if (!newDivName.trim() || !newDivPlayers.trim()) {
+      toast.error('Please enter division name and players', { theme: 'dark' });
+      return;
+    }
+
+    const playerNames = newDivPlayers.split('\n')
+      .map(p => p.trim())
+      .filter(p => p.length > 0);
+
+    if (playerNames.length < 2) {
+      toast.error('At least 2 players required', { theme: 'dark' });
+      return;
+    }
+
+    const newPlayers: Player[] = playerNames.map(name => {
+      // Basic extraction of username if provided in "Name (Username)" format
+      const match = name.match(/^(.*?)\s*\((.*?)\)$/);
+      if (match) {
+        return { name: match[1].trim(), username: match[2].trim() };
+      }
+      return { name, username: name.toLowerCase().replace(/\s+/g, '_') };
+    });
+
+    const labels = newPlayers.map(p => playerLabel(p));
+    const generatedRounds = generateRoundRobin(labels);
+
+    const newDiv: Division = {
+      id: Date.now().toString(),
+      name: newDivName,
+      players: newPlayers,
+      rounds: generatedRounds as any // Types match closely enough for this demo
+    };
+
+    setDivisions(prev => [...prev, newDiv]);
+    setNewDivName('');
+    setNewDivPlayers('');
+    toast.success(`Division "${newDivName}" generated!`, { theme: 'dark' });
   };
 
   const extractUsername = (label: string) => {
@@ -126,22 +232,38 @@ const App: React.FC = () => {
 
   return (
     <>
+      <ToastContainer position="bottom-right" />
       <nav className="top-nav">
         <img src="/SS4_logo.png" alt="SS4 Logo" className="nav-logo" onError={(e) => (e.currentTarget.style.display = 'none')} />
         <div className="nav-title">
           <h1>SS4 Chess League</h1>
-          <span>The Board Remembers</span>
+          <span onDoubleClick={handleAdminToggle} onTouchStart={handleTouchStart} style={{ cursor: 'default' }}>The Board Remembers</span>
         </div>
       </nav>
 
       <div className="league-wrap">
+        <div className="division-selector-bar">
+          <label>Division:</label>
+          <select 
+            value={selectedDivisionId} 
+            onChange={(e) => {
+              setSelectedDivisionId(e.target.value);
+              setCurrentRound(1);
+            }}
+          >
+            {divisions.map(d => (
+              <option key={d.id} value={d.id}>{d.name}</option>
+            ))}
+          </select>
+        </div>
+
         <div className="hero">
           <div className="hero-content">
-            <h2>Fork Division</h2>
+            <h2>{currentDivision.name}</h2>
             <p>Think Deep, Play True</p>
             <div className="hero-stats">
-              <span className="hero-stat">20 Players</span>
-              <span className="hero-stat blue">38 Rounds</span>
+              <span className="hero-stat">{currentDivision.players.length} Players</span>
+              <span className="hero-stat blue">{currentDivision.rounds.length} Rounds</span>
               <span className="hero-stat">Win = 3 · Draw = 1 · Loss = 0</span>
             </div>
           </div>
@@ -149,12 +271,15 @@ const App: React.FC = () => {
 
         <div className="tabs">
           <button className={`tab ${activeTab === 'standings' ? 'active' : ''}`} onClick={() => setActiveTab('standings')}>Standings</button>
-          <button className={`tab ${activeTab === 'results' ? 'active' : ''}`} onClick={() => setActiveTab('results')}>Enter Results</button>
+          <button className={`tab ${activeTab === 'results' ? 'active' : ''}`} onClick={() => setActiveTab('results')}>Results</button>
           <button className={`tab ${activeTab === 'fixtures' ? 'active' : ''}`} onClick={() => setActiveTab('fixtures')}>Fixtures</button>
+          {isAdmin && (
+            <button className={`tab ${activeTab === 'admin' ? 'active' : ''}`} onClick={() => setActiveTab('admin')}>Manage</button>
+          )}
         </div>
 
         {activeTab === 'standings' && (
-          <div id="standings" className="section active">
+          <div className="section active">
             <div className="standings-wrap">
               <table className="standings-table">
                 <thead>
@@ -199,30 +324,19 @@ const App: React.FC = () => {
                 </tbody>
               </table>
             </div>
-            <p className="tiebreaker-note">Tiebreaker: head-to-head record · Form shows last 5 played games</p>
           </div>
         )}
 
         {activeTab === 'results' && (
-          <div id="results" className="section active">
-            <div className="admin-bar">
-              <span className={`admin-status ${isAdmin ? 'unlocked' : 'locked'}`}>
-                {isAdmin ? '✓ Admin Mode' : '🔒 View Only'}
-              </span>
-              <button className={`admin-lock-btn ${isAdmin ? 'lock' : 'unlock'}`} onClick={handleAdminToggle}>
-                {isAdmin ? 'Lock' : 'Admin Login'}
-              </button>
+          <div className="section active">
+            <div className="admin-status-indicator">
+              {isAdmin ? '🔓 Admin Mode' : '🔒 View Only'}
             </div>
-            {!isAdmin && (
-              <div className="view-only-notice">
-                Results are <strong>view-only</strong> for visitors. Enter the admin PIN to record or update game results.
-              </div>
-            )}
             <div className="round-selector">
               <label>Round</label>
               <div className="round-pills">
-                {rounds.map(r => {
-                  const allDone = r.games.every(([w, b]) => gameResults[gameKey(r.round, w, b)]);
+                {currentDivision.rounds.map(r => {
+                  const allDone = r.games.every(([w, b]) => gameResults[gameKey(currentDivision.id, r.round, w, b)]);
                   return (
                     <button
                       key={r.round}
@@ -234,24 +348,23 @@ const App: React.FC = () => {
                   );
                 })}
               </div>
-              <span className={`save-indicator ${showSaved ? 'show' : ''}`}>✓ Saved</span>
             </div>
-            <div className="round-date-label">{rounds[currentRound - 1].date}</div>
+            <div className="round-date-label">{currentDivision.rounds[currentRound - 1]?.date}</div>
             <div id="games-list">
-              {rounds[currentRound - 1].games.map(([w, b], idx) => {
-                const key = gameKey(currentRound, w, b);
+              {currentDivision.rounds[currentRound - 1]?.games.map(([w, b]) => {
+                const key = gameKey(currentDivision.id, currentRound, w, b);
                 const res = gameResults[key];
                 const wP = getPlayerDisplay(w);
                 const bP = getPlayerDisplay(b);
                 return (
-                  <div key={key} className="game-card" style={{ animationDelay: `${idx * 0.03}s` }}>
+                  <div key={key} className="game-card">
                     <div className="player-name">{wP.name}<span className="uname">@{wP.username}</span></div>
                     <span className="vs">vs</span>
                     <div className="player-name" style={{ textAlign: 'right' }}>{bP.name}<span className="uname">@{bP.username}</span></div>
                     <div className="result-btns">
-                      <button className={`res-btn ${res === 'white' ? 'win' : ''}`} disabled={!isAdmin} onClick={() => handleSetResult(key, 'white')}>{wP.name} wins</button>
+                      <button className={`res-btn ${res === 'white' ? 'win' : ''}`} disabled={!isAdmin} onClick={() => handleSetResult(key, 'white')}>{wP.name}</button>
                       <button className={`res-btn ${res === 'draw' ? 'draw' : ''}`} disabled={!isAdmin} onClick={() => handleSetResult(key, 'draw')}>Draw</button>
-                      <button className={`res-btn ${res === 'black' ? 'loss' : ''}`} disabled={!isAdmin} onClick={() => handleSetResult(key, 'black')}>{bP.name} wins</button>
+                      <button className={`res-btn ${res === 'black' ? 'loss' : ''}`} disabled={!isAdmin} onClick={() => handleSetResult(key, 'black')}>{bP.name}</button>
                     </div>
                   </div>
                 );
@@ -261,28 +374,28 @@ const App: React.FC = () => {
         )}
 
         {activeTab === 'fixtures' && (
-          <div id="fixtures" className="section active">
+          <div className="section active">
             <div id="fixtures-list">
-              {rounds.map((r, ri) => (
-                <div key={r.round} className="fixture-round" style={{ animationDelay: `${Math.min(ri * 0.015, 0.4)}s` }}>
+              {currentDivision.rounds.map((r) => (
+                <div key={r.round} className="fixture-round">
                   <div className="fixture-round-header">
                     <span>Round {r.round}</span>
                     <span>{r.date}</span>
                   </div>
                   <div className="fixture-wrap">
                     {r.games.map(([w, b]) => {
-                      const res = gameResults[gameKey(r.round, w, b)];
+                      const res = gameResults[gameKey(currentDivision.id, r.round, w, b)];
                       const wP = getPlayerDisplay(w);
                       const bP = getPlayerDisplay(b);
                       return (
                         <div key={`${r.round}_${w}_${b}`} className={`fixture-game ${res ? 'done' : ''}`}>
                           <span className="color-badge white-badge">W</span>
                           <div style={{ flex: 1 }}>{wP.name}<span className="uname" style={{ fontSize: '10px' }}>@{wP.username}</span></div>
-                          <span style={{ fontSize: '11px', color: 'var(--ss4-orange-glow)', width: '24px', textAlign: 'center', fontWeight: 700, letterSpacing: '0.1em' }}>vs</span>
+                          <span className="vs-small">vs</span>
                           <div style={{ flex: 1, textAlign: 'right' }}>{bP.name}<span className="uname" style={{ fontSize: '10px' }}>@{bP.username}</span></div>
                           <span className="color-badge black-badge">B</span>
-                          {res === 'white' && <span className="result-tag">{wP.name} W</span>}
-                          {res === 'black' && <span className="result-tag">{bP.name} W</span>}
+                          {res === 'white' && <span className="result-tag">{wP.name}</span>}
+                          {res === 'black' && <span className="result-tag">{bP.name}</span>}
                           {res === 'draw' && <span className="result-tag">Draw</span>}
                         </div>
                       );
@@ -293,13 +406,68 @@ const App: React.FC = () => {
             </div>
           </div>
         )}
+
+        {activeTab === 'admin' && isAdmin && (
+          <div className="section active">
+            <div className="admin-creation-panel">
+              <h3>Create New Division</h3>
+              <div className="form-group">
+                <label>Division Name</label>
+                <input 
+                  type="text" 
+                  value={newDivName} 
+                  onChange={e => setNewDivName(e.target.value)} 
+                  placeholder="e.g. Knight Division"
+                />
+              </div>
+              <div className="form-group">
+                <label>Players (one per line)</label>
+                <textarea 
+                  rows={8}
+                  value={newDivPlayers} 
+                  onChange={e => setNewDivPlayers(e.target.value)} 
+                  placeholder={"Magnus (Carlsen)\nHikaru (Nakamura)\nFabiano (Caruana)"}
+                />
+              </div>
+              <button className="generate-btn" onClick={handleCreateDivision}>Generate Division & Pairings</button>
+            </div>
+
+            <div className="admin-manage-panel">
+              <h3>Existing Divisions</h3>
+              <div className="division-list">
+                {divisions.map(d => (
+                  <div key={d.id} className="division-item">
+                    <span>{d.name} ({d.players.length} players)</span>
+                    <button 
+                      className="delete-btn" 
+                      onClick={() => {
+                        if (divisions.length === 1) {
+                          toast.error('Cannot delete the last division', { theme: 'dark' });
+                          return;
+                        }
+                        if (window.confirm(`Delete ${d.name}?`)) {
+                          setDivisions(prev => prev.filter(div => div.id !== d.id));
+                          if (selectedDivisionId === d.id) setSelectedDivisionId(divisions.find(div => div.id !== d.id)!.id);
+                          toast.warn(`Deleted ${d.name}`, { theme: 'dark' });
+                        }
+                      }}
+                    >
+                      Delete
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <button className="logout-btn" onClick={handleAdminToggle}>Lock Admin Access</button>
+            </div>
+          </div>
+        )}
       </div>
 
       {showPinModal && (
         <div className="pin-overlay show" onClick={() => setShowPinModal(false)}>
           <div className="pin-modal" onClick={e => e.stopPropagation()}>
             <h3>🔐 Admin Access</h3>
-            <p>Enter your PIN to enter or edit results.</p>
+            <p>Enter your PIN to manage the league.</p>
             <div className="pin-input-wrap">
               <input
                 className={`pin-input ${pinError ? 'error' : ''}`}
