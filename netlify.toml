@@ -1,6 +1,7 @@
 [build]
-  command = "cd 'Chess League' && npm run build"
-  publish = "Chess League/dist"
+  base = "Chess League"
+  command = "npm run build"
+  publish = "dist"
 
 [[redirects]]
   from = "/*"
