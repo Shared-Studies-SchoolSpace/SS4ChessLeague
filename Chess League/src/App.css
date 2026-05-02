@@ -341,12 +341,13 @@ body::after {
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   border: 1px solid var(--glass-border);
   border-radius: var(--border-radius-lg);
-  overflow: hidden;
+  overflow-x: auto;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
 .standings-table {
   width: 100%;
+  min-width: 500px;
   border-collapse: collapse;
   font-size: 13px;
   table-layout: fixed;
@@ -649,8 +650,27 @@ body::after {
 }
 
 /* ======== FIXTURES ======== */
+#fixtures-list {
+  display: flex;
+  overflow-x: auto;
+  gap: 16px;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 16px;
+  /* Hide scrollbar but keep functionality */
+  scrollbar-width: none; 
+}
+
+#fixtures-list::-webkit-scrollbar {
+  display: none; 
+}
+
 .fixture-round {
-  margin-bottom: 14px;
+  flex: 0 0 85%;
+  min-width: 280px;
+  max-width: 400px;
+  scroll-snap-align: center;
+  margin-bottom: 0;
   animation: cardIn 0.4s ease backwards;
 }
 
@@ -825,16 +845,35 @@ body::after {
 }
 
 .division-selector-bar select {
-  background: var(--glass-bg-strong);
+  appearance: none;
+  background: linear-gradient(135deg, rgba(5, 11, 37, 0.8) 0%, rgba(10, 21, 53, 0.9) 100%);
   color: white;
-  border: 1px solid var(--glass-orange-border);
-  padding: 6px 12px;
-  border-radius: 20px;
+  border: 1px solid rgba(255, 138, 31, 0.4);
+  padding: 8px 36px 8px 16px;
+  border-radius: 24px;
   outline: none;
   font-family: inherit;
   font-size: 13px;
+  font-weight: 600;
   cursor: pointer;
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 4px 12px rgba(255, 138, 31, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+  background-image: url('data:image/svg+xml;utf8,<svg fill="none" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5" stroke="%23FF8A1F" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>');
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+}
+
+.division-selector-bar select:hover, .division-selector-bar select:focus {
+  border-color: rgba(255, 138, 31, 0.8);
+  box-shadow: 0 4px 16px rgba(255, 138, 31, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+.division-selector-bar select option {
+  background: var(--ss4-blue-dark);
+  color: white;
+  font-weight: 600;
 }
 
 .admin-status-indicator {
@@ -959,4 +998,45 @@ body::after {
   .game-card { padding: 10px 12px; gap: 8px; }
   .standings-table thead th { padding: 10px 4px; font-size: 10px; }
   .standings-table td { padding: 9px 4px; }
+  
+  .fixture-round {
+    flex: 0 0 85%;
+    min-width: 260px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .league-wrap {
+    max-width: 1000px;
+    padding: calc(var(--nav-height) + 2.5rem) 2rem 4rem;
+  }
+  .hero {
+    padding: 2.5rem 3rem;
+  }
+  .hero h2 {
+    font-size: 32px;
+  }
+  .hero p {
+    font-size: 15px;
+  }
+  .tab {
+    font-size: 15px;
+    padding: 12px 20px;
+  }
+  .game-card {
+    padding: 16px 24px;
+  }
+  .player-name {
+    font-size: 15px;
+  }
+  .res-btn {
+    font-size: 13px;
+    padding: 8px 16px;
+  }
+  
+  /* Show more fixtures on larger screens */
+  .fixture-round {
+    flex: 0 0 45%;
+    max-width: 45%;
+  }
 }
