@@ -6,8 +6,9 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './App.css';
 
-const STORAGE_KEY = 'ss4_chess_league_2026_v2';
-const RESULTS_KEY = 'ss4_chess_league_results_v2';
+// Supabase imports
+import { supabase } from './supabase';
+
 const ADMIN_PIN = '1926';
 
 type Result = 'white' | 'black' | 'draw' | null;
@@ -39,38 +40,63 @@ function gameKey(divisionId: string, round: number, white: string, black: string
 }
 
 const App: React.FC = () => {
-  const [divisions, setDivisions] = useState<Division[]>(() => {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return JSON.parse(raw);
-    return [{
-      id: 'default',
-      name: 'Fork Division',
-      players: initialPlayers,
-      rounds: initialRounds
-    }];
-  });
+  const [divisions, setDivisions] = useState<Division[]>([]);
+  const [gameResults, setGameResults] = useState<GameResults>({});
 
-  const [selectedDivisionId, setSelectedDivisionId] = useState<string>(divisions[0].id);
-  const [gameResults, setGameResults] = useState<GameResults>(() => {
-    const raw = localStorage.getItem(RESULTS_KEY);
-    const results = raw ? JSON.parse(raw) : {};
-    
-    // Migration: Check for old storage key and migrate to 'default' division
-    const oldRaw = localStorage.getItem('ss4_chess_league_2026');
-    if (oldRaw) {
-      const oldResults = JSON.parse(oldRaw);
-      Object.keys(oldResults).forEach(key => {
-        // Only migrate if not already present in new format
-        const newKey = `default_${key}`;
-        if (!results[newKey]) {
-          results[newKey] = oldResults[key];
-        }
-      });
-      // Optionally clear old data after migration
-      // localStorage.removeItem('ss4_chess_league_2026');
-    }
-    return results;
-  });
+  const [selectedDivisionId, setSelectedDivisionId] = useState<string>('default');
+
+  // Sync Divisions from Supabase
+  useEffect(() => {
+    const fetchDivisions = async () => {
+      const { data } = await supabase.from('divisions').select('*');
+      if (data && data.length > 0) {
+        setDivisions(data as Division[]);
+      } else {
+        // Initial setup if Supabase is empty
+        const defaultDiv: Division = {
+          id: 'default',
+          name: 'Fork Division',
+          players: initialPlayers,
+          rounds: initialRounds
+        };
+        await supabase.from('divisions').upsert(defaultDiv);
+      }
+    };
+    fetchDivisions();
+
+    const channel = supabase
+      .channel('divisions_changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'divisions' }, () => {
+        fetchDivisions();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  // Sync Results from Supabase
+  useEffect(() => {
+    const fetchResults = async () => {
+      const { data } = await supabase.from('settings').select('data').eq('id', 'gameResults').single();
+      if (data && data.data) {
+        setGameResults(data.data as GameResults);
+      }
+    };
+    fetchResults();
+
+    const channel = supabase
+      .channel('settings_changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'settings' }, () => {
+        fetchResults();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   const [activeTab, setActiveTab] = useState<'standings' | 'results' | 'fixtures' | 'admin'>('standings');
   const [currentRound, setCurrentRound] = useState(1);
@@ -84,18 +110,11 @@ const App: React.FC = () => {
   const [newDivPlayers, setNewDivPlayers] = useState('');
 
   const currentDivision = useMemo(() => 
-    divisions.find(d => d.id === selectedDivisionId) || divisions[0]
+    divisions.find(d => d.id === selectedDivisionId) || divisions[0] || { id: 'default', name: 'Loading...', players: [], rounds: [] }
   , [divisions, selectedDivisionId]);
 
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(divisions));
-  }, [divisions]);
-
-  useEffect(() => {
-    localStorage.setItem(RESULTS_KEY, JSON.stringify(gameResults));
-  }, [gameResults]);
-
   const standings = useMemo(() => {
+    if (!currentDivision || currentDivision.players.length === 0) return [];
     const stats: Record<string, StandingEntry> = {};
     currentDivision.players.forEach(p => {
       const lbl = playerLabel(p);
@@ -136,15 +155,19 @@ const App: React.FC = () => {
     });
   }, [gameResults, currentDivision]);
 
-  const handleSetResult = (key: string, result: Result) => {
+  const handleSetResult = async (key: string, result: Result) => {
     if (!isAdmin) return;
-    setGameResults(prev => {
-      const next = { ...prev };
-      if (next[key] === result) delete next[key];
-      else next[key] = result;
-      return next;
-    });
-    toast.success('Result updated!', { autoClose: 1000, theme: 'dark' });
+    
+    const nextResults = { ...gameResults };
+    if (nextResults[key] === result) delete nextResults[key];
+    else nextResults[key] = result;
+
+    try {
+      await supabase.from('settings').upsert({ id: 'gameResults', data: nextResults });
+      toast.success('Result updated!', { autoClose: 1000, theme: 'dark' });
+    } catch (e) {
+      toast.error('Failed to update result');
+    }
   };
 
   const [lastTap, setLastTap] = useState(0);
@@ -179,7 +202,7 @@ const App: React.FC = () => {
     }
   };
 
-  const handleCreateDivision = () => {
+  const handleCreateDivision = async () => {
     if (!newDivName.trim() || !newDivPlayers.trim()) {
       toast.error('Please enter division name and players', { theme: 'dark' });
       return;
@@ -206,17 +229,23 @@ const App: React.FC = () => {
     const labels = newPlayers.map(p => playerLabel(p));
     const generatedRounds = generateRoundRobin(labels);
 
+    const newId = Date.now().toString();
     const newDiv: Division = {
-      id: Date.now().toString(),
+      id: newId,
       name: newDivName,
       players: newPlayers,
-      rounds: generatedRounds as any // Types match closely enough for this demo
+      rounds: generatedRounds as any
     };
 
-    setDivisions(prev => [...prev, newDiv]);
-    setNewDivName('');
-    setNewDivPlayers('');
-    toast.success(`Division "${newDivName}" generated!`, { theme: 'dark' });
+    try {
+      await supabase.from('divisions').insert(newDiv);
+      setNewDivName('');
+      setNewDivPlayers('');
+      setSelectedDivisionId(newId);
+      toast.success(`Division "${newDivName}" generated!`, { theme: 'dark' });
+    } catch (e) {
+      toast.error('Failed to create division');
+    }
   };
 
   const extractUsername = (label: string) => {
@@ -440,20 +469,27 @@ const App: React.FC = () => {
                     <span>{d.name} ({d.players.length} players)</span>
                     <button 
                       className="delete-btn" 
-                      onClick={() => {
+                      onClick={async () => {
                         if (divisions.length === 1) {
                           toast.error('Cannot delete the last division', { theme: 'dark' });
                           return;
                         }
                         if (window.confirm(`Delete ${d.name}?`)) {
-                          setDivisions(prev => prev.filter(div => div.id !== d.id));
-                          if (selectedDivisionId === d.id) setSelectedDivisionId(divisions.find(div => div.id !== d.id)!.id);
-                          toast.warn(`Deleted ${d.name}`, { theme: 'dark' });
+                          try {
+                            await supabase.from('divisions').delete().eq('id', d.id);
+                            if (selectedDivisionId === d.id) {
+                              setSelectedDivisionId(divisions.find(div => div.id !== d.id)!.id);
+                            }
+                            toast.warn(`Deleted ${d.name}`, { theme: 'dark' });
+                          } catch (e) {
+                            toast.error('Failed to delete division');
+                          }
                         }
                       }}
                     >
                       Delete
                     </button>
+
                   </div>
                 ))}
               </div>

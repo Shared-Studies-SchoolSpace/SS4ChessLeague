@@ -1,0 +1,13 @@
+# Secrets and Credentials
+.env
+.env.*
+*-adminsdk-*.json
+firebase-key.json
+
+# Scripts and temporary data
+parse_pin.py
+pin_division.json
+
+# Python caches
+__pycache__/
+*.pyc
